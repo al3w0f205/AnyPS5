@@ -6,6 +6,7 @@ extern "C" {
 int APS5_VABI sched_get_priority_max_nid_postfix(int policy);
 int APS5_VABI sched_get_priority_min_nid_postfix(int policy);
 int APS5_VABI getpriority_nid_postfix(int which, int who);
+int APS5_VABI setpriority_nid_postfix(int which, int who, int prio);
 int APS5_VABI getpid_nid_postfix(void);
 int* APS5_VABI __error_nid_postfix();
 }
@@ -27,6 +28,14 @@ static void RequireError(int which, int who, int error) {
     *__error_nid_postfix() = 0;
     Require(getpriority_nid_postfix(which, who) == -1 && *__error_nid_postfix() == error);
 }
+static void RequireSetSuccess(int which, int who, int prio) {
+    *__error_nid_postfix() = 13;
+    Require(setpriority_nid_postfix(which, who, prio) == 0 && *__error_nid_postfix() == 13);
+}
+static void RequireSetError(int which, int who, int prio, int error) {
+    *__error_nid_postfix() = 0;
+    Require(setpriority_nid_postfix(which, who, prio) == -1 && *__error_nid_postfix() == error);
+}
 int main() {
     Require(Rejects(-1) && Rejects(2) && Rejects(5));
     for (int policy : {1, 3}) {
@@ -46,4 +55,15 @@ int main() {
     RequireError(PrioUser, 1000, 3);
     RequireError(3, 0, 22);
     RequireError(-1, self, 22);
+    RequireSetSuccess(PrioProcess, 0, 0);
+    RequireSetSuccess(PrioProcess, self, 10);
+    RequireSetSuccess(PrioGroup, 0, -5);
+    RequireSetSuccess(PrioGroup, self, 0);
+    RequireSetSuccess(PrioUser, 0, 19);
+    RequireSetError(PrioProcess, self + 1, 0, 3);
+    RequireSetError(PrioProcess, -1, 0, 3);
+    RequireSetError(PrioGroup, self + 1, 0, 3);
+    RequireSetError(PrioUser, 1000, 0, 3);
+    RequireSetError(3, 0, 0, 22);
+    RequireSetError(-1, self, 0, 22);
 }
