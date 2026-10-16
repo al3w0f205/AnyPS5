@@ -6,6 +6,7 @@
 extern "C" {
 const std::uint8_t* APS5_VABI sceCesRefersUcsProfileCp1252(void);
 const std::uint8_t* APS5_VABI sceCesRefersUcsProfileCp1251(void);
+const void* APS5_VABI sceCesRefersUcsProfileCp1250(void);
 int APS5_VABI sceCesMbcsUcsContextInit(void*, const void*);
 void* APS5_VABI sceCesUcsProfileInitEucJpCp51932(void*);
 int APS5_VABI sceCesUtf8StrToMbcsStr(void*, const std::uint8_t*, std::uint32_t, std::uint32_t*, std::uint8_t*, std::uint32_t, std::uint32_t*);
@@ -113,6 +114,30 @@ int main() {
     }
     Require(Utf8ToSbc(cyrillic, "\xC3\xA9", 2) == unassignedCode);
     Require(Utf8ToSbc(profile, "\xD0\x90", 2) == unassignedCode);
+
+    const auto* centralEurope = reinterpret_cast<const std::uint8_t*>(sceCesRefersUcsProfileCp1250());
+    Require(centralEurope != nullptr && centralEurope == reinterpret_cast<const std::uint8_t*>(sceCesRefersUcsProfileCp1250()) && centralEurope != profile && centralEurope != cyrillic);
+    RequireSbcToUtf8(centralEurope, 'A', "A");
+    RequireSbcToUtf8(centralEurope, 0x80, "\xE2\x82\xAC");
+    RequireSbcToUtf8(centralEurope, 0x8A, "\xC5\xA0");
+    RequireSbcToUtf8(centralEurope, 0x8C, "\xC5\x9A");
+    RequireSbcToUtf8(centralEurope, 0x8D, "\xC5\xA4");
+    RequireSbcToUtf8(centralEurope, 0x8E, "\xC5\xBD");
+    RequireSbcToUtf8(centralEurope, 0x8F, "\xC5\xB9");
+    RequireUtf8ToSbc(centralEurope, "\xC5\xA0", 0x8A);
+    RequireUtf8ToSbc(centralEurope, "\xC5\x9A", 0x8C);
+    RequireUtf8ToSbc(centralEurope, "\xC5\xA4", 0x8D);
+    RequireUtf8ToSbc(centralEurope, "\xC5\xBD", 0x8E);
+    RequireUtf8ToSbc(centralEurope, "\xC5\xB9", 0x8F);
+    for (int sbc = 1; sbc < 256; ++sbc) {
+        if (sbc >= 0x80 && (sbc == 0x81 || sbc == 0x83 || sbc == 0x88 || sbc == 0x90 || sbc == 0x98)) continue;
+        std::uint8_t cp[4] = {};
+        std::uint32_t cpLength = 0;
+        std::uint8_t back = 0;
+        Require(sceCesSbcToUtf8(centralEurope, static_cast<std::uint8_t>(sbc), cp, sizeof(cp), &cpLength) == 0);
+        Require(sceCesUtf8ToSbc(cp, cpLength, &cpLength, centralEurope, &back) == 0 && back == sbc);
+    }
+    Require(Utf8ToSbc(centralEurope, "\xC2\x81", 2) == unassignedCode);
 
     char context[256] = {};
     Require(sceCesMbcsUcsContextInit(context, cyrillic) == 0);
