@@ -65,6 +65,7 @@ void TestDisableState() {
     Require(sceScreenShotIsDisabled(0, &value) == 0 && value == 0, "enable is reported");
     value = 7;
     Require(sceScreenShotIsDisabled(-1, &value) == ErrorArgument && value == 7, "id -1 is rejected");
+    Require(sceScreenShotIsDisabled(1, &value) == 0 && value == 0, "positive id succeeds");
     Require(sceScreenShotIsDisabled(0, nullptr) == ErrorArgument, "null result is rejected");
     Require(sceScreenShotDisableNotification() == 0 && sceScreenShotEnableNotification() == 0, "notification toggles");
 }
