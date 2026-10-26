@@ -24,6 +24,8 @@ int main() {
     Require(sceRudpGetNumberOfPacketsToRead(0) == notInitialized);
     Require(sceRudpGetSizeWritable(0) == notInitialized);
     Require(sceRudpGetSizeReadable(0) == notInitialized);
+    Require(sceRudpGetMaxSegmentSize(nullptr) == notInitialized);
+    Require(sceRudpPollCreate(0) == notInitialized);
     Require(sceRudpInit_nid_postfix(pool.data(), static_cast<int>(pool.size())) == 0);
     Require(sceRudpGetNumberOfPacketsToRead(0) == invalidContext);
     Require(sceRudpGetSizeWritable(0) == invalidContext);
