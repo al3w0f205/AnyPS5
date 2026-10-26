@@ -40,6 +40,8 @@ int main() {
         Require(sceUserServiceGetUserName(user, name, 1) == USER_SERVICE_ERROR_UNKNOWN_USER);
         Require(Filled(name, 0, sizeof(name), 'A'));
         Require(sceUserServiceGetUserName(user, nullptr, sizeof(name)) == USER_SERVICE_ERROR_INVALID_ARGUMENT);
+        Require(sceUserServiceGetUserName(user, nullptr, 0) == USER_SERVICE_ERROR_INVALID_ARGUMENT);
     }
     Require(sceUserServiceGetUserName(USER_SERVICE_INITIAL_USER_ID, nullptr, sizeof(name)) == USER_SERVICE_ERROR_INVALID_ARGUMENT);
+    Require(sceUserServiceGetUserName(USER_SERVICE_INITIAL_USER_ID, nullptr, 0) == USER_SERVICE_ERROR_INVALID_ARGUMENT);
 }
