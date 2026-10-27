@@ -117,6 +117,12 @@ void testMapping() {
     check(std::memcmp(regular.data(), preparedMapping.data(), sizeof(regular)) == 0, "prepared mapping differs from published registers");
     check(regular[3].value == split[3].value && regular[4].value == split[4].value, "mappings differ outside the high f16 half mode");
     checkIdentity(regular, static_cast<std::uint32_t>(inputs.size()), "unused interpolants are not the identity");
+
+    auto update0100 = filled();
+    check(sceAgcUpdateInterpolantMapping_0100(update0100.data(), &gs, &ps) == 0, "0100 update mapping failed");
+    check(std::memcmp(update0100.data(), preparedMapping.data(), written) == 0, "0100 prepared update differs from published registers");
+    check(std::memcmp(update0100.data(), regular.data(), written) == 0, "0100 update differs from create mapping");
+    check(std::memcmp(update0100.data() + inputs.size(), untouched.data(), sizeof(update0100) - written) == 0, "0100 update wrote past its inputs");
 }
 
 void testUpdateMapping() {
@@ -207,12 +213,16 @@ void testRejections() {
     std::memset(regs.data(), 0xcc, sizeof(regs));
     const auto saved = regs;
     expectFailure([&] { sceAgcCreateInterpolantMapping_0100(regs.data(), &gs, &ps); });
+    expectFailure([&] { sceAgcUpdateInterpolantMapping_0100(regs.data(), &gs, &ps); });
     expectFailure([&] { sceAgcCreateInterpolantMapping_10000(regs.data(), &gs, &ps); });
     expectFailure([&] { sceAgcUpdateInterpolantMapping_10000(regs.data(), &gs, &ps); });
     check(std::memcmp(regs.data(), saved.data(), sizeof(regs)) == 0, "rejected mapping wrote registers");
     ps.num_input_semantics = 1;
     expectFailure([&] { sceAgcCreateInterpolantMapping_10000(regs.data(), nullptr, &ps); });
     expectFailure([&] { sceAgcCreateInterpolantMapping_10000(nullptr, &gs, &ps); });
+    expectFailure([&] { sceAgcUpdateInterpolantMapping_0100(regs.data(), nullptr, &ps); });
+    expectFailure([&] { sceAgcUpdateInterpolantMapping_0100(nullptr, &gs, &ps); });
+    expectFailure([&] { sceAgcUpdateInterpolantMapping_0100(regs.data(), &gs, nullptr); });
     expectFailure([&] { sceAgcUpdateInterpolantMapping_10000(regs.data(), nullptr, &ps); });
     expectFailure([&] { sceAgcUpdateInterpolantMapping_10000(nullptr, &gs, &ps); });
     expectFailure([&] { sceAgcUpdateInterpolantMapping_10000(regs.data(), &gs, nullptr); });
@@ -240,7 +250,7 @@ int main() {
         testUpdateMapping();
         testUnversionedMapping();
         testRejections();
-        check(mappings == 10u && links == 8u, "mapping preparation call count changed");
+        check(mappings == 11u && links == 9u, "mapping preparation call count changed");
         LibcRunShutdown_nid_postfix();
         std::puts("AGC interpolant mapping tests passed");
         return 0;
