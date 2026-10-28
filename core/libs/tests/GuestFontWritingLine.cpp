@@ -250,6 +250,10 @@ int main() {
     Require(sceFontWritingLineGetRenderMetrics(nullptr, &metrics) == SCE_FONT_ERROR_INVALID_PARAMETER && Same(metrics, {}));
     Require(sceFontWritingLineGetRenderMetrics(rtl, nullptr) == SCE_FONT_ERROR_INVALID_PARAMETER);
     Require(sceFontWritingLineClear(nullptr) == SCE_FONT_ERROR_INVALID_PARAMETER);
+    Require(sceFontWritingLineWritesOrder(nullptr, Attribute(0), &runA, &a) == SCE_FONT_ERROR_INVALID_PARAMETER);
+    Require(sceFontWritingLineWritesOrder(rtl, Attribute(0), &runA, nullptr) == SCE_FONT_ERROR_INVALID_PARAMETER);
+    Require(sceFontWritingLineWritesOrder(rtl, 0, &runA, &a) == SCE_FONT_ERROR_INVALID_PARAMETER);
+    Require(sceFontWritingLineWritesOrder(rtl, Attribute(0x7F), &runA, &a) == SCE_FONT_ERROR_INVALID_PARAMETER);
 
     int notALine = 0;
     Require(sceFontWritingLineRefersRenderStep(nullptr) == nullptr);
