@@ -82,6 +82,8 @@ void TestValidation() {
         Require(sceAudioInGetGain(badHandle, &gain) == invalidHandle && gain == 1.0f);
         Require(sceAudioInGetRerouteCount(badHandle) == invalidHandle);
         Require(sceAudioInGetGain(badHandle, nullptr) == invalidPointer);
+        Require(sceAudioInGetSilentState(badHandle) == invalidHandle);
+        Require(sceAudioInClose(badHandle) == invalidHandle);
     }
     int port = sceAudioInAsyncOpen(user, 0, 0, 128, 48000, 2);
     float gain = 0.0f;
