@@ -30,6 +30,12 @@ int main() {
     parameter.userId = -1;
     Require(sceNpAuthGetAuthorizedAppCode(0, &parameter, code.data(), nullptr, &authorizationRequired) == invalidArgument);
     parameter.userId = 1;
+    parameter.clientId = nullptr;
+    Require(sceNpAuthGetAuthorizedAppCode(0, &parameter, code.data(), nullptr, &authorizationRequired) == invalidArgument);
+    parameter.clientId = reinterpret_cast<const NpAuthClientId*>(client.data());
+    parameter.scope = nullptr;
+    Require(sceNpAuthGetAuthorizedAppCode(0, &parameter, code.data(), nullptr, &authorizationRequired) == invalidArgument);
+    parameter.scope = "";
     Require(sceNpAuthGetAuthorizedAppCode(0, &parameter, code.data(), nullptr, &authorizationRequired) == requestNotFound);
     const auto requestId = sceNpAuthCreateRequest();
     Require(requestId > 0);
